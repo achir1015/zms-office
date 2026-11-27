@@ -100,13 +100,14 @@
         info: { owner: E.info.owner, uploaded: E.info.created_at },
       },
       documentType: DT[kind] || 'word',
-      type: ZO.isPhone() ? 'mobile' : 'desktop',            // 手機用 ONLYOFFICE 的行動版介面（iPad 用桌面版）
+      type: 'desktop',                                       // 行動版介面在離線建置裡無法使用 → 手機改用精簡版面（compactHeader、符合寬度）
       editorConfig: {
         mode: readonly ? 'view' : 'edit', lang: ZO.editorLang(),
         coEditing: { mode: 'fast', change: false },
         user: { id: (P && P.S && P.S.user && P.S.user.uid) || 'user', name: (P && P.S && P.S.user && P.S.user.name) || t('使用者') },
         customization: {
-          help: false, hideRightMenu: false, compactHeader: false, toolbarNoTabs: false, uiTheme: 'theme-light',
+          help: false, hideRightMenu: ZO.isPhone(), compactHeader: ZO.isPhone(), toolbarNoTabs: false, uiTheme: 'theme-light',
+          ...(ZO.isPhone() ? { zoom: -2 } : {}),
           features: { featuresTips: false, spellcheck: { mode: false, change: false } },
           anonymous: { request: false, label: t('使用者') }, goback: false, close: false,
         },
@@ -198,7 +199,8 @@
       // 關閉編輯器內的「關於」以外的雲端連結
       if (w.document && !w.__zoCss) {
         const st = w.document.createElement('style');
-        st.textContent = '#header-logo, .extra .btn-goback, #left-btn-support, #left-btn-plugins-info{display:none!important}';
+        st.textContent = '#header-logo, .extra .btn-goback, #left-btn-support, #left-btn-plugins-info{display:none!important}' +
+          (ZO.isPhone() ? '#right-menu{display:none!important}' : '');
         w.document.head.append(st);
         w.__zoCss = true;
       }
@@ -286,7 +288,7 @@
     fmt = (fmt || NATIVE_OUT[E.info.ext] || 'DOCX').toUpperCase();
     const ext = fmt === 'PDFA' ? 'pdf' : fmt.toLowerCase();
     const name = h('input', { class: 'inp', value: baseName() + (ext === E.info.ext ? ' - ' + t('複本') : '') });
-    const where = ZO.selectEl([['lib', t('文件庫（我的文件）')]].concat(ZO.native ? [['pc', t('電腦上的資料夾…')]] : [['dl', t('下載到這台裝置')]]), 'lib');
+    const where = ZO.selectEl([['lib', t('文件庫（我的文件）')]].concat(ZO.native ? [['pc', t('電腦上的資料夾…')]] : [['dl', window.ZMSIOS || window.ZMSAndroid ? t('分享／存到手機…') : t('下載到這台裝置')]]), 'lib');
     const r = await ZO.dialog({ title: t('另存新檔'), body: h('div', {}, h('label', { class: 'fld' }, t('檔名'), name), h('label', { class: 'fld' }, t('儲存位置'), where), h('p', { class: 'hint' }, t('格式：') + fmt)),
       buttons: [{ label: t('取消'), value: null }, { label: t('儲存'), primary: true, onClick: () => name.value.trim() ? { name: name.value.trim(), where: where.value } : false }] });
     if (!r) return;
@@ -310,10 +312,7 @@
     } catch (e) { b.close(); ZO.err(e); }
   }
   E.saveAs = saveAs;
-  function download(bytes, filename) {
-    const a = h('a', { href: URL.createObjectURL(new Blob([bytes])), download: filename });
-    document.body.append(a); a.click(); setTimeout(() => a.remove(), 500);
-  }
+  function download(bytes, filename) { ZO.saveFile(bytes, filename).catch(ZO.err); }
   async function userDownloaded(buffer, fileName, ext) {
     // 編輯器自己的「下載為」：問要存到哪裡
     const nm = (fileName || baseName() + '.' + ext).replace(/\.[^.]+$/, '');

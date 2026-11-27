@@ -204,8 +204,7 @@ function addSummarySlide() {
     ]);
   }
   function exportGs() {
-    const a = h('a', { href: URL.createObjectURL(new Blob([$('#sc-code').value], { type: 'text/javascript' })), download: (cur ? cur.name : 'Code') + '.gs' });
-    document.body.append(a); a.click(); a.remove();
+    ZO.saveFile(new TextEncoder().encode($('#sc-code').value), (cur ? cur.name : 'Code') + '.gs', 'text/javascript').catch(ZO.err);
   }
   async function importGs(opts) {
     if (!view) { await open(opts); }

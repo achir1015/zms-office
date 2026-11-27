@@ -68,7 +68,8 @@
   const err = (m) => new Error(m);
   const clean = (n, fb) => (String(n || '').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').trim().replace(/^\.+|\.+$/g, '').slice(0, 150) || fb || t('未命名'));
   const splitExt = (n) => { const i = n.lastIndexOf('.'); return i < 0 ? [n, ''] : [n.slice(0, i), n.slice(i + 1).toLowerCase()]; };
-  const toBlob = (b) => (b instanceof Blob ? b : new Blob([b]));
+  // 檔案內容一律存成 ArrayBuffer（部分 WebKit 不能把 Blob 存進 IndexedDB）
+  const toBuf = async (b) => (b instanceof ArrayBuffer ? b : b instanceof Blob ? b.arrayBuffer() : ArrayBuffer.isView(b) ? b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) : new Uint8Array(b).buffer);
 
   function out(d) {
     const r = Object.assign({}, d);
@@ -82,14 +83,15 @@
     while (docs.some((d) => d.name === n)) { i++; n = name + ' (' + i + ')'; }
     return n;
   }
-  async function addDoc(name, ext, blob, folder, extra) {
+  async function addDoc(name, ext, data, folder, extra) {
+    const buf = await toBuf(data);
     const kind = EXT_KIND[ext];
     if (!kind) throw err(t('不支援的檔案格式：') + '.' + ext);
     const nm = await uniqueName(clean(name), ext, folder);
-    const d = Object.assign({ folder_id: folder || null, name: nm, ext, kind, size: blob.size, version: 1, starred: 0, shared: 0, is_template: 0,
+    const d = Object.assign({ folder_id: folder || null, name: nm, ext, kind, size: buf.byteLength, version: 1, starred: 0, shared: 0, is_template: 0,
       trashed: 0, linked: 0, created_at: now(), updated_at: now(), opened_at: now(), path: nm + '.' + ext }, extra || {});
     d.id = await put('docs', d);
-    await put('files', blob, d.id);
+    await put('files', buf, d.id);
     return d;
   }
   async function doc(id) { const d = await getOne('docs', +id); if (!d) throw err(t('找不到這份文件')); return d; }
@@ -98,14 +100,14 @@
   async function saveDoc(id, data) {
     const d = await doc(id);
     const old = await getOne('files', d.id);
-    if (old && old.size) {
-      await put('versions', { doc_id: d.id, version: d.version, blob: old, size: old.size, uid: 'local', created_at: now() });
+    if (old && old.byteLength) {
+      await put('versions', { doc_id: d.id, version: d.version, blob: old, size: old.byteLength, uid: 'local', created_at: now() });
       const vs = (await all('versions')).filter((v) => v.doc_id === d.id).sort((a, b) => b.version - a.version);
       for (const v of vs.slice(KEEP_VERSIONS)) await del('versions', v.id);
     }
-    const blob = toBlob(data);
-    await put('files', blob, d.id);
-    Object.assign(d, { size: blob.size, version: d.version + 1, updated_at: now() });
+    const buf = await toBuf(data);
+    await put('files', buf, d.id);
+    Object.assign(d, { size: buf.byteLength, version: d.version + 1, updated_at: now() });
     await put('docs', d);
     return out(d);
   }
@@ -170,10 +172,9 @@
   async function backup() {
     const docs = await all('docs'), folders = await all('folders'), scripts = await all('scripts');
     const files = [['data.json', JSON.stringify({ app: 'zms-office', version: VERSION, docs, folders, scripts, pref: await kv('pref', {}) })]];
-    for (const d of docs) { const b = await getOne('files', d.id); if (b) files.push(['files/' + d.id, new Uint8Array(await b.arrayBuffer())]); }
+    for (const d of docs) { const b = await getOne('files', d.id); if (b) files.push(['files/' + d.id, new Uint8Array(await toBuf(b))]); }
     const zip = window.ZOConvert.zipWrite(files);
-    const a = ZO.h('a', { href: URL.createObjectURL(new Blob([zip])), download: t('文件office彙整備份') + '-' + now().replace(/[: ]/g, '-') + '.zip' });
-    document.body.append(a); a.click(); a.remove();
+    await ZO.saveFile(zip, t('文件office彙整備份') + '-' + now().replace(/[: ]/g, '-') + '.zip', 'application/zip');
     return { path: t('下載資料夾'), size: zip.length };
   }
   async function restore(file) {
@@ -183,7 +184,7 @@
     for (const s of ['docs', 'files', 'versions', 'folders', 'scripts']) await tx(s, 'readwrite', (st) => P(st.clear()));
     for (const f of data.folders || []) await put('folders', f);
     for (const s of data.scripts || []) await put('scripts', s);
-    for (const d of data.docs || []) { await put('docs', d); if (z['files/' + d.id]) await put('files', new Blob([z['files/' + d.id]]), d.id); }
+    for (const d of data.docs || []) { await put('docs', d); if (z['files/' + d.id]) await put('files', await toBuf(z['files/' + d.id]), d.id); }
     await put('kv', data.pref || {}, 'pref');
   }
   ZO.Local = { backup, restore };
@@ -237,21 +238,21 @@
       const src = b.template && !/^\d+$/.test(String(b.template)) ? 'assets/templates/' + b.template : 'assets/blank/blank.' + ext;
       let blob;
       if (/^\d+$/.test(String(b.template || ''))) blob = await getOne('files', +b.template);
-      if (!blob) { const r = await fetch(src); blob = r.ok ? await r.blob() : new Blob([]); }
+      if (!blob) { const r = await fetch(src); blob = r.ok ? await r.arrayBuffer() : new ArrayBuffer(0); }
       const d = await addDoc(b.name || t({ word: '文件', cell: '活頁簿', slide: '簡報', diagram: '流程圖' }[b.kind]), ext, blob, b.folder || null);
       return out(d);
     },
     async doc_info(q) { const d = await doc(q.id); await touch(d); return Object.assign(out(d), { readonly: false, locked_by: '' }); },
     async upload(data, q) {
       const [base, ext] = splitExt(q.name || 'file');
-      return out(await addDoc(base, ext, toBlob(data), q.folder ? +q.folder : null));
+      return out(await addDoc(base, ext, data, q.folder ? +q.folder : null));
     },
     async import_paths() { throw err(t('線上版請用「開啟」選擇檔案，或直接把檔案拖進視窗')); },
     async save(data, q) { return saveDoc(q.id, data); },
     async save_as(data, q) {
       const src = q.id ? await getOne('docs', +q.id) : null;
       const ext = String(q.ext || '').toLowerCase().replace('.', '');
-      return out(await addDoc(q.name || t('未命名'), ext, toBlob(data), q.folder ? +q.folder : (src ? src.folder_id : null)));
+      return out(await addDoc(q.name || t('未命名'), ext, data, q.folder ? +q.folder : (src ? src.folder_id : null)));
     },
     async export_to() { throw err(t('線上版請選「下載到這台裝置」')); },
     async heartbeat() { return { ok: true }; },
@@ -306,12 +307,25 @@
     async ai_chat(b) { return aiChat(b); },
     async ai_test(b) { const r = await aiChat({ provider: b.provider, messages: [{ role: 'user', content: '請只回答兩個字：你好' }] }); return { ok: true, reply: r.text.slice(0, 80), model: r.model }; },
     async to_flipbook(data, q) {
-      const a = ZO.h('a', { href: URL.createObjectURL(new Blob([data], { type: 'application/pdf' })), download: (q.name || 'document') + '.pdf' });
-      document.body.append(a); a.click(); a.remove();
+      await ZO.saveFile(data, (q.name || 'document') + '.pdf', 'application/pdf');
       return { path: (q.name || 'document') + '.pdf', installed: false, launched: false, web: true };
     },
     async mcp_info() { throw err(t('MCP 伺服器只有電腦版（Windows／macOS）才有')); },
-    async update_check() { return { latest: true, info: null, current: VERSION, note: '線上版與手機版會自動使用最新版。' }; },
+    async update_check() {
+      const app = window.ZMSIOS || window.ZMSAndroid;
+      if (!app) return { latest: true, info: null, current: VERSION, note: '線上版每次開啟都是最新版。' };
+      const cur = window.ZMSIOS ? window.ZMSIOS.version : (window.ZMSAndroid.getVersion ? window.ZMSAndroid.getVersion() : VERSION);
+      const r = await fetch('https://api.github.com/repos/achir1015/zms-office/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw err(t('無法連到更新伺服器') + '（' + r.status + '）');
+      const rel = await r.json();
+      const want = window.ZMSIOS ? /-ios\.ipa$/ : /-android\.apk$/;
+      const asset = (rel.assets || []).find((a) => want.test(a.name));
+      const ver = (rel.tag_name || '').replace(/^v/i, '');
+      const num = (v) => v.split('.').map((x) => +x || 0).reduce((tt, x) => tt * 1000 + x, 0);
+      if (!asset || num(ver) <= num(cur)) return { latest: true, info: null, current: cur };
+      const page = window.ZMSIOS ? 'https://achir1015.github.io/zms-office/ios/' : asset.browser_download_url;
+      return { latest: false, current: cur, info: { version: ver, notes: rel.body || '', page, size: asset.size, name: '' } };
+    },
     async update_install() { throw err(t('線上版不需要安裝更新')); },
     async backup() { return backup(); },
     async restore() { throw err(t('請用「備份與還原」裡的「還原…」選擇備份檔')); },
@@ -331,12 +345,24 @@
   ZO.get = (name, params) => call(name, params || {}, params || {});
   ZO.raw = (name, bytes, params) => call(name, bytes, params || {});
   ZO.fetchFile = async (id, vid) => {
-    if (vid) { const v = await getOne('versions', +vid); if (!v) throw err(t('找不到這個版本')); return v.blob.arrayBuffer(); }
+    if (vid) { const v = await getOne('versions', +vid); if (!v) throw err(t('找不到這個版本')); return toBuf(v.blob); }
     const b = await getOne('files', +id);
-    return b ? b.arrayBuffer() : new ArrayBuffer(0);
+    return b ? toBuf(b) : new ArrayBuffer(0);
   };
   ZO.fileURL = () => '';
   ZO.upload = (file, folder) => ZO.raw('upload', file, { name: file.name || 'file', folder: folder || '' });
+
+  // Android 返回鍵：先關選單／對話框，再從文件分頁回首頁（回傳 true＝已處理）
+  window.__zmsBack = function () {
+    const ctx = document.querySelector('.ctx');
+    if (ctx) { ctx.remove(); return true; }
+    const x = document.querySelector('.dlg-wrap .dlg-head .x');
+    if (x) { x.click(); return true; }
+    const active = document.querySelector('#tabs .tab.active');
+    if (active && active.dataset.tab !== 'home') { ZO.showTab('home'); return true; }
+    return false;
+  };
+  if (window.ZMSAndroid && window.ZMSAndroid.openUrl) window.open = (u) => { window.ZMSAndroid.openUrl(String(u)); return null; };
 
   // 儲存空間：請瀏覽器不要自動清掉（iOS Safari 7 天規則、空間不足時）
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});

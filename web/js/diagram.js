@@ -131,7 +131,7 @@
         const d = await ZO.raw('save_as', bytes, { id: DOC_ID, name, ext });
         ZO.toast(t('已另存到文件庫：') + d.filename, 'ok');
       } else {
-        const a = h('a', { href: URL.createObjectURL(new Blob([bytes])), download: name + '.' + ext }); document.body.append(a); a.click(); a.remove();
+        await ZO.saveFile(bytes, name + '.' + ext);
       }
     } catch (e) { b.close(); ZO.err(e); }
   }

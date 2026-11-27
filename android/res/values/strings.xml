@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">資料助秘文件office彙整</string>
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#2B579A</item>
+        <item name="android:colorPrimaryDark">#2B579A</item>
+        <item name="android:colorAccent">#185ABD</item>
+        <item name="android:statusBarColor">#2B579A</item>
+        <item name="android:navigationBarColor">#2B579A</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

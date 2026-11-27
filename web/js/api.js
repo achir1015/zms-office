@@ -164,8 +164,37 @@
   ZO.on = (n, f) => (L[n] = L[n] || []).push(f);
   ZO.emit = (n, d) => (L[n] || []).forEach((f) => { try { f(d); } catch (e) { console.error(e); } });
 
+
+  // 存檔到裝置：Android App（分段交給 App 存到「下載/文件office」再開分享選單）、iPhone／iPad App（交給 App 內伺服器開分享選單）、一般瀏覽器（下載）
+  ZO.saveFile = async function (data, name, type) {
+    const P = window.parent && window.parent !== window && window.parent.ZO ? window.parent.ZO : null;
+    if (P && P.saveFile && P !== ZO) return P.saveFile(data, name, type);
+    const blob = data instanceof Blob ? data : new Blob([data], { type: type || 'application/octet-stream' });
+    if (window.ZMSAndroid && window.ZMSAndroid.saveBegin) {
+      const b = JSON.parse(window.ZMSAndroid.saveBegin(name, blob.type || 'application/octet-stream'));
+      if (b.status !== 'ok') throw new Error(b.message);
+      const CH = 3 * 1024 * 1024;
+      for (let o = 0; o < blob.size; o += CH) {
+        const buf = new Uint8Array(await blob.slice(o, o + CH).arrayBuffer());
+        let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+        const r = JSON.parse(window.ZMSAndroid.saveChunk(b.id, btoa(bin)));
+        if (r.status !== 'ok') throw new Error(r.message);
+      }
+      const e = JSON.parse(window.ZMSAndroid.saveEnd(b.id));
+      if (e.status !== 'ok') throw new Error(e.message);
+      ZO.toast(ZO.t('已存到手機的「{0}」', e.path), 'ok');
+      return;
+    }
+    if (window.ZMSIOS) { await fetch('/__save?name=' + encodeURIComponent(name), { method: 'POST', body: blob }); return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  };
+
   // 手機（窄螢幕＋觸控）：編輯器改用行動版介面、主畫面精簡
-  ZO.isPhone = () => (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && Math.min(screen.width, screen.height) < 600;
+  ZO.isPhone = () => /iPhone|iPod|Android.+Mobile/i.test(navigator.userAgent) ||
+    ((navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && Math.min(screen.width, screen.height) < 600);
   if (ZO.isPhone()) document.documentElement.classList.add('phone');
 
   // 文件種類
