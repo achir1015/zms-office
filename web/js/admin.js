@@ -5,6 +5,7 @@
   const LV = () => [t('無'), t('查詢'), t('維護')];
 
   function menu(at) {
+    if (ZO.WEB) return ZO.menu(at, [[t('公司設定（文件庫位置）…'), company], [t('備份與還原…'), backup], '-', [t('關於'), about]]);
     ZO.menu(at, [
       [t('使用者與權限…'), users], [t('公司設定（文件庫位置）…'), company], [t('操作紀錄…'), audit], [t('備份與還原…'), backup],
       '-', [t('MCP 連線設定…'), mcp], [t('檢查更新…'), update], ZO.native ? [t('建立桌面捷徑'), shortcut] : null,
@@ -81,6 +82,23 @@
   }
 
   async function backup() {
+    if (ZO.WEB) {
+      return ZO.dialog({ title: t('備份與還原'), width: '540px', body: h('div', {},
+        h('p', {}, t('線上版與手機版的文件存在這台裝置的瀏覽器裡。備份會把所有文件、版本以外的資料與設定下載成一個 ZIP 檔，請存到雲端硬碟或電腦。')),
+        h('p', { class: 'hint' }, t('還原會把目前的資料換成備份檔的內容，請小心使用。'))),
+      buttons: [
+        { label: t('還原…'), danger: true, onClick: () => new Promise((res) => {
+          const inp = h('input', { type: 'file', accept: '.zip' });
+          inp.onchange = async () => {
+            const f = inp.files[0];
+            if (!f || !(await ZO.confirm(t('確定要用「{0}」還原？目前的資料會被覆蓋。', f.name), t('還原'), true))) return res(false);
+            const b = ZO.busy(t('還原中…'));
+            try { await ZO.Local.restore(f); ZO.toast(t('還原完成'), 'ok'); setTimeout(() => location.reload(), 1200); res(true); } catch (e) { ZO.err(e); res(false); } finally { b.close(); }
+          };
+          inp.click();
+        }) },
+        { label: t('立即備份'), primary: true, onClick: async () => { const b = ZO.busy(t('備份中…')); try { await ZO.Local.backup(); ZO.toast(t('已下載備份檔'), 'ok'); } finally { b.close(); } return true; } }] });
+    }
     await ZO.nativeReady;
     ZO.dialog({ title: t('備份與還原'), width: '540px', body: h('div', {},
       h('p', {}, t('備份會把資料庫（使用者、權限、文件清單、版本記錄、巨集、設定）存成一個 .sql.gz 檔。文件本身在「文件庫資料夾」，請一併用隨身碟或雲端硬碟備份。')),

@@ -180,3 +180,32 @@ button.mini { height: 24px; padding: 0 8px; font-size: 12px; border: 1px solid #
 .dev-log .e { color: #a4262c; }
 .dev-log .i { color: #555; }
 .dev-log .ok { color: #107c10; }
+
+/* ---------------------------------------------------------------- 窄螢幕（手機、iPad 直向）與 iPhone 瀏海安全區域 */
+:root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+#top { padding-top: var(--safe-top); height: calc(var(--top) + var(--safe-top)); }
+#views { top: calc(var(--top) + var(--safe-top)); bottom: var(--safe-bottom); }
+@media (max-width: 820px) {
+  #rail { width: 54px; }
+  #rail .it { padding: 10px 0; justify-content: center; font-size: 0; }
+  #rail .it .ic { font-size: 18px; }
+  #rail .cap { display: none; }
+  #rail .it .dicon { font-size: 11px; }
+  #brand-name, #top-search { display: none; }
+  #home-main { padding: 14px 12px 30px; }
+  #home-main h1 { font-size: 21px; }
+  .new-card { width: 112px; }
+  .new-card .thumb { height: 140px; }
+  .new-card.landscape .thumb { height: 70px; }
+  .list-bar { overflow-x: auto; }
+  .list-bar .lt { padding: 8px 9px; white-space: nowrap; }
+  table.docs th:nth-child(2), table.docs td:nth-child(2), table.docs th:nth-child(4), table.docs td:nth-child(4) { display: none; }
+  table.docs th:nth-child(1) { width: 64%; } table.docs th:nth-child(3) { width: 26%; }
+  .tab { min-width: 70px; max-width: 150px; padding: 0 6px; }
+  .dlg { max-width: 96vw; }
+  .row { flex-wrap: wrap; }
+}
+html.phone #bar #doc-name, html.phone #bar .state, html.phone #bar .autosave span, html.phone #bar #custom-menus { display: none; }
+html.phone #bar .mb { padding: 0 7px; }
+html.phone #side { position: absolute; inset: 0; width: auto; z-index: 20; }
+body.ed-page #bar { padding-top: var(--safe-top); height: calc(36px + var(--safe-top)); }

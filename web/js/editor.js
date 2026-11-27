@@ -81,7 +81,7 @@
     return new Promise((res, rej) => {
       if (window.DocsAPI) return res();
       const s = document.createElement('script');
-      s.src = '/vendor/onlyoffice/web-apps/apps/api/documents/api.js';
+      s.src = 'vendor/onlyoffice/web-apps/apps/api/documents/api.js';
       s.onload = res; s.onerror = () => rej(new Error(t('編輯器載入失敗')));
       document.head.append(s);
     });
@@ -100,6 +100,7 @@
         info: { owner: E.info.owner, uploaded: E.info.created_at },
       },
       documentType: DT[kind] || 'word',
+      type: ZO.isPhone() ? 'mobile' : 'desktop',            // 手機用 ONLYOFFICE 的行動版介面（iPad 用桌面版）
       editorConfig: {
         mode: readonly ? 'view' : 'edit', lang: ZO.editorLang(),
         coEditing: { mode: 'fast', change: false },
@@ -411,7 +412,11 @@
       b.set(t('交給電子書翻頁工具…'));
       const r = await ZO.raw('to_flipbook', bytes, { name: baseName() });
       b.close();
-      if (r.launched) ZO.toast(t('已交給「資料助秘電子書翻頁」，請在翻頁工具裡繼續設計'), 'ok');
+      if (r.web) {
+        const go = await ZO.dialog({ title: t('匯出到資料助秘電子書翻頁'), body: h('p', {}, t('PDF「{0}」已下載。請在「資料助秘電子書翻頁」按「建立電子書 → PDF 檔」選這個檔案。', r.path)),
+          buttons: [{ label: t('關閉'), value: null }, { label: t('開啟線上版'), primary: true, value: 'web' }] });
+        if (go === 'web') window.open('https://achir1015.github.io/zms-flipbook/', '_blank');
+      } else if (r.launched) ZO.toast(t('已交給「資料助秘電子書翻頁」，請在翻頁工具裡繼續設計'), 'ok');
       else {
         const go = await ZO.dialog({ title: t('匯出到資料助秘電子書翻頁'), body: h('div', {}, h('p', {}, t('PDF 已放到電子書翻頁工具的收件匣：')), h('p', { class: 'hint', style: { wordBreak: 'break-all' } }, r.path),
           h('p', {}, r.installed ? t('請開啟「資料助秘電子書翻頁」，它會自動匯入。') : t('這台電腦還沒安裝「資料助秘電子書翻頁」。可以先安裝，或使用線上版匯入這個 PDF。'))),

@@ -35,7 +35,7 @@
     frame = $('#dio');
     const params = new URLSearchParams({ embed: '1', proto: 'json', spin: '1', ui: 'kennedy', lang: DIO_LANG[ZO.lang] || 'en', stealth: '1', offline: '1', pwa: '0', noExitBtn: '1', noSaveBtn: '1', saveAndExit: '0', libraries: '1', configure: '1', math: '0', dark: '0' });
     if (E.info.readonly) params.set('chrome', '0');
-    frame.src = '/vendor/drawio/index.html?' + params.toString();
+    frame.src = 'vendor/drawio/index.html?' + params.toString();
   }
   function fail(msg) { $('#ed-loading').innerHTML = ''; $('#ed-loading').append(h('div', { style: { fontSize: '40px' } }, '⚠️'), h('div', {}, msg)); }
   function post(msg) { frame.contentWindow.postMessage(JSON.stringify(msg), location.origin); }

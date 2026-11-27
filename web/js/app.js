@@ -414,17 +414,17 @@
   $('#btn-user').addEventListener('click', (e) => ZO.menu(e.currentTarget, [
     [S.user ? S.user.name + '（' + S.user.uid + '）' : '', () => {}, { disabled: true }],
     '-',
-    [t('變更密碼…'), () => ZO.Admin.password()],
+    ZO.WEB ? null : [t('變更密碼…'), () => ZO.Admin.password()],
     can('AI') ? [t('AI 助理設定…'), () => ZO.AIConfig.open()] : null,
     can('DEV') ? [t('擴充功能（巨集、Apps Script）…'), () => ZO.Scripts.open()] : null,
-    [t('MCP 連線設定…'), () => ZO.Admin.mcp()],
+    ZO.WEB ? null : [t('MCP 連線設定…'), () => ZO.Admin.mcp()],
     can('SYS') ? [t('系統管理…'), () => ZO.Admin.menu(e.currentTarget)] : null,
-    [t('檢查更新…'), () => ZO.Admin.update()],
+    ZO.WEB ? null : [t('檢查更新…'), () => ZO.Admin.update()],
     ZO.native ? [t('建立桌面捷徑'), () => ZO.Admin.shortcut()] : null,
     [t('語音教學'), () => ZO.Guide.menu()],
     [t('關於'), () => ZO.Admin.about()],
     '-',
-    [t('登出'), async () => { if (ZO.anyDirty() && !(await ZO.confirm(t('還有未儲存的文件，確定要登出？'), t('登出'), true))) return; await ZO.api('logout').catch(() => {}); ZO.setSession(''); location.reload(); }],
+    ZO.WEB ? null : [t('登出'), async () => { if (ZO.anyDirty() && !(await ZO.confirm(t('還有未儲存的文件，確定要登出？'), t('登出'), true))) return; await ZO.api('logout').catch(() => {}); ZO.setSession(''); location.reload(); }],
   ]));
 
   // 拖曳檔案進視窗

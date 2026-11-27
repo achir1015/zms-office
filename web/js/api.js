@@ -164,6 +164,10 @@
   ZO.on = (n, f) => (L[n] = L[n] || []).push(f);
   ZO.emit = (n, d) => (L[n] || []).forEach((f) => { try { f(d); } catch (e) { console.error(e); } });
 
+  // 手機（窄螢幕＋觸控）：編輯器改用行動版介面、主畫面精簡
+  ZO.isPhone = () => (navigator.maxTouchPoints > 0 || 'ontouchstart' in window) && Math.min(screen.width, screen.height) < 600;
+  if (ZO.isPhone()) document.documentElement.classList.add('phone');
+
   // 文件種類
   ZO.KIND = {
     word: { app: 'DataWord', name: '文件', color: '#2b579a', icon: 'W', new: '空白文件', ext: 'docx', func: 'WORD' },
