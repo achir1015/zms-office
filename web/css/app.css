@@ -207,6 +207,17 @@ button.mini { height: 24px; padding: 0 8px; font-size: 12px; border: 1px solid #
 }
 html.phone #bar #doc-name, html.phone #bar .state, html.phone #bar .autosave span, html.phone #bar #custom-menus { display: none; }
 html.phone #bar .mb { padding: 0 7px; }
+/* 手機：分頁不壓縮成一個字，放不下就左右滑（切換分頁時會自動捲到看得見） */
+html.phone #tabs .tab { flex: none; min-width: 0; width: 112px; }
+html.phone #tabs .tab.home { width: auto; }
+html.phone #tabs .tab.home .tn { display: none; }
+/* 手機：上方細列放不下時可以左右滑，按鈕不壓縮；工具名稱已在分頁標籤上，所以隱藏 */
+html.phone #bar { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; gap: 2px; padding: 0 4px; }
+html.phone #bar::-webkit-scrollbar { display: none; }
+html.phone #bar > *, html.phone #bar .menus > * { flex: none; }
+html.phone #bar .menus { margin-left: 0; }
+html.phone #bar #app-badge { display: none; }
+html.phone #bar .autosave { margin-right: 0; }
 html.phone #side { position: absolute; inset: 0; width: auto; z-index: 20; }
 /* 編輯頁在分頁（iframe）裡，上方安全區域已由主畫面處理（WebKit 在 iframe 裡也會給 env 值） */
 body.ed-page { --safe-top: 0px; --safe-bottom: 0px; }

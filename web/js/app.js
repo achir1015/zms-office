@@ -366,6 +366,7 @@
   ZO.openDocById = async (id) => { try { openDoc(await ZO.get('doc_info', { id })); } catch (e) { ZO.err(e); } };
   function showTab(key) {
     $$('#tabs .tab').forEach((x) => x.classList.toggle('active', x.dataset.tab === String(key)));
+    const at = $('#tabs .tab.active'); if (at) at.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     $$('#views .view').forEach((x) => x.classList.toggle('active', (x.dataset.tab || (x.id === 'view-home' ? 'home' : '')) === String(key)));
     if (key === 'home') { refreshList(); document.title = t('資料助秘文件office彙整'); }
     else if (TABS[key]) { document.title = TABS[key].doc.filename + ' - ' + (ZO.KIND[TABS[key].doc.kind] || {}).app; try { TABS[key].frame.contentWindow.focus(); } catch (e) { /* */ } }

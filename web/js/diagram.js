@@ -33,7 +33,7 @@
     if (E.info.readonly) { $('#m-save').classList.add('hidden'); $('.autosave').classList.add('hidden'); $('#save-state').textContent = t('唯讀'); }
     bindBar();
     frame = $('#dio');
-    const params = new URLSearchParams({ embed: '1', proto: 'json', spin: '1', ui: 'kennedy', lang: DIO_LANG[ZO.lang] || 'en', stealth: '1', offline: '1', pwa: '0', noExitBtn: '1', noSaveBtn: '1', saveAndExit: '0', libraries: '1', configure: '1', math: '0', dark: '0' });
+    const params = new URLSearchParams({ embed: '1', proto: 'json', spin: '1', ui: ZO.isPhone() ? 'simple' : 'kennedy', lang: DIO_LANG[ZO.lang] || 'en', stealth: '1', offline: '1', pwa: '0', noExitBtn: '1', noSaveBtn: '1', saveAndExit: '0', libraries: '1', configure: '1', math: '0', dark: '0' });
     if (E.info.readonly) params.set('chrome', '0');
     frame.src = 'vendor/drawio/index.html?' + params.toString();
   }
