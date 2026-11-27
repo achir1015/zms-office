@@ -277,7 +277,9 @@
         h('td', { class: 'acts' }, h('button', { title: t('更多'), onclick: (e) => { e.stopPropagation(); folderMenu(e.currentTarget, f); } }, '⋯'))));
     }
     for (const d of docs) {
-      const tr = h('tr', { class: 'drow', 'data-id': d.id, ondblclick: () => (S.view === 'trash' ? null : openDoc(d)), onclick: (e) => { $$('tr.sel', tb).forEach((x) => x.classList.remove('sel')); tr.classList.add('sel'); if (e.detail === 1 && S.view !== 'trash') clearTimeout(tr._t); },
+      const tr = h('tr', { class: 'drow', 'data-id': d.id, ondblclick: () => (S.view === 'trash' ? null : openDoc(d)), onclick: (e) => { $$('tr.sel', tb).forEach((x) => x.classList.remove('sel')); tr.classList.add('sel'); if (e.detail === 1 && S.view !== 'trash') clearTimeout(tr._t);
+          // 手機、平板（觸控為主）沒有「按兩下」的習慣：點一下就開啟
+          if (S.view !== 'trash' && (ZO.isPhone() || matchMedia('(hover: none)').matches)) openDoc(d); },
         oncontextmenu: (e) => { e.preventDefault(); docMenu({ x: e.clientX, y: e.clientY }, d); } },
       h('td', {}, h('div', { class: 'nm' }, ZO.docIcon(d.kind), h('span', {}, d.filename), d.starred ? '⭐' : null,
         d.linked ? h('span', { class: 'tag link', title: d.path }, t('電腦檔案')) : null, d.shared ? h('span', { class: 'tag' }, t('共用')) : null)),
