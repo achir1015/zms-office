@@ -208,4 +208,5 @@ button.mini { height: 24px; padding: 0 8px; font-size: 12px; border: 1px solid #
 html.phone #bar #doc-name, html.phone #bar .state, html.phone #bar .autosave span, html.phone #bar #custom-menus { display: none; }
 html.phone #bar .mb { padding: 0 7px; }
 html.phone #side { position: absolute; inset: 0; width: auto; z-index: 20; }
-body.ed-page #bar { padding-top: var(--safe-top); height: calc(36px + var(--safe-top)); }
+/* 編輯頁在分頁（iframe）裡，上方安全區域已由主畫面處理（WebKit 在 iframe 裡也會給 env 值） */
+body.ed-page { --safe-top: 0px; --safe-bottom: 0px; }

@@ -110,6 +110,14 @@ final class Web: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDelegate
         present(ac) { completionHandler() }
     }
 
+    // 模擬器測試（啟動參數 -autotest）：載入完成後自動建立一份文件並開啟，方便截圖檢查
+    func webView(_ w: WKWebView, didFinish n: WKNavigation!) {
+        guard ProcessInfo.processInfo.arguments.contains("-autotest") else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            w.evaluateJavaScript("(async()=>{document.querySelectorAll('.dlg-wrap .btn').forEach(b=>{if(!b.classList.contains('primary'))b.click()});await ZO.api('pref',{guideSeen:true});const d=await ZO.api('doc_new',{kind:'word',name:'iOS 測試'});ZO.openDoc(d);setTimeout(()=>{try{const f=document.querySelector('.view.doc iframe').contentWindow;f.ZOE.runBuilder('var p=Api.CreateParagraph();p.AddText(\"iPhone 版編輯測試 OK\");Api.GetDocument().Push(p);')}catch(e){}},20000)})()", completionHandler: nil)
+        }
+    }
+
     // 網頁被系統回收時（記憶體不足）自動重新載入
     func webViewWebContentProcessDidTerminate(_ w: WKWebView) { w.reload() }
 
