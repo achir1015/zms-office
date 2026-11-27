@@ -123,7 +123,7 @@
           if (pasteHtml) {
             setTimeout(() => {
               try { api().pluginMethod_PasteHtml(pasteHtml); } catch (e) { console.error(e); }
-              setTimeout(() => { try { api().SetUnchangedDocument(); } catch (e) { /* */ } markDirty(false); }, 1200);
+              setTimeout(() => { clearModified(); markDirty(false); }, 1200);
             }, 300);
           }
           if (!readonly) ZO.Gas && ZO.Gas.onOpen();
@@ -263,7 +263,7 @@
       try {
         const bytes = await exportAs(NATIVE_OUT[E.info.ext] || E.info.ext.toUpperCase());
         const d = await ZO.raw('save', bytes, { id: DOC_ID });
-        try { api().SetUnchangedDocument(); } catch (e) { /* */ }
+        clearModified();
         markDirty(false);
         E.info.size = d.size;
         setState((opts.auto ? t('已自動儲存') : t('已儲存')) + ' ' + new Date().toLocaleTimeString().slice(0, -3));
@@ -327,6 +327,10 @@
   }
 
   // ================================================================ 變更狀態、自動儲存
+  function clearModified() {               // 文書：SetUnchangedDocument；試算表：要重設歷程的存檔點
+    try { api().SetUnchangedDocument(); } catch (e) { /* */ }
+    try { fw().AscCommon.History.Reset_SavedIndex(true); } catch (e) { /* */ }
+  }
   function markDirty(v) {
     if (E.dirty === v) return;
     E.dirty = v;
