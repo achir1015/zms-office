@@ -21,7 +21,9 @@ from .settings import program_dir, resource_dir
 KEY = os.environ.get("ZO_KEY") or secrets.token_urlsafe(18)
 WEB = os.path.join(resource_dir(), "web")
 # 編輯器元件很大，安裝版放在程式旁的 vendor（不包進 PyInstaller）；開發時在專案的 vendor
-VENDOR = next((d for d in (os.path.join(program_dir(), "vendor"), os.path.join(resource_dir(), "vendor"))
+VENDOR = next((d for d in (os.path.join(program_dir(), "vendor"),                          # Windows 安裝版
+                            os.path.normpath(os.path.join(program_dir(), "..", "Resources", "vendor")),  # macOS .app
+                            os.path.join(resource_dir(), "vendor"))
                if os.path.isdir(d)), os.path.join(resource_dir(), "vendor"))
 STATE = {"db": None, "st": None, "ready": False, "error": "", "native": None}
 SESSIONS = {}
@@ -435,8 +437,10 @@ def api_mcp_info(h, q, body):
     """MCP 連線設定（給 Claude Desktop 等工具）：安裝版是程式旁的 ZMSOfficeMCP.exe。"""
     import sys as _sys
     _sess(h, q)
-    if getattr(_sys, "frozen", False):
-        cmd, args = os.path.join(os.path.dirname(_sys.executable), "ZMSOfficeMCP.exe" if os.name == "nt" else "ZMSOfficeMCP"), []
+    if getattr(_sys, "frozen", False) and _sys.platform == "darwin":     # .app/Contents/Resources/mcp/ZMSOfficeMCP
+        cmd, args = os.path.normpath(os.path.join(os.path.dirname(_sys.executable), "..", "Resources", "mcp", "ZMSOfficeMCP")), []
+    elif getattr(_sys, "frozen", False):
+        cmd, args = os.path.join(os.path.dirname(_sys.executable), "ZMSOfficeMCP.exe"), []
     else:
         cmd, args = _sys.executable, [os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "main.py")), "--mcp"]
     return dict(command=cmd, args=args)

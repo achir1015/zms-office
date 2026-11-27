@@ -49,7 +49,8 @@ def bundled_mariadb() -> str:
     """安裝版附帶的 MariaDB：Windows 在程式旁 mariadb/bin；macOS 在 .app/Contents/Resources/mariadb/bin。"""
     exe = "mariadbd.exe" if os.name == "nt" else "mariadbd"
     for c in (os.path.join(program_dir(), "mariadb", "bin"),
-              os.path.normpath(os.path.join(program_dir(), "..", "Resources", "mariadb", "bin"))):
+              os.path.normpath(os.path.join(program_dir(), "..", "Resources", "mariadb", "bin")),
+              os.path.normpath(os.path.join(program_dir(), "..", "mariadb", "bin"))):   # macOS 的 MCP 在 Resources/mcp
         if os.path.isfile(os.path.join(c, exe)):
             return c
     return ""

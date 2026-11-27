@@ -99,7 +99,7 @@ def main():
             TARGETS[k] = TARGETS[k][:1]
     report = {}
     with sync_playwright() as p:
-        b = p.chromium.launch(channel="msedge")
+        b = p.webkit.launch() if "--webkit" in sys.argv else p.chromium.launch(channel="msedge")
         for src in only:
             page = b.new_page()
             errs = []
