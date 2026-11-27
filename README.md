@@ -1,4 +1,10 @@
 # 資料助秘文件office彙整
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/aa6bce38-e0af-456a-8bfd-d9fec20df279" />
+說明
+
+
+https://github.com/user-attachments/assets/8c87f269-3076-4f11-92a7-58d5b29bd03f
+
 
 免費的辦公室套件，一個程式裡有五個工具，介面和 Microsoft Office 相似，存出來的檔案可以直接用 Microsoft Word／Excel／PowerPoint 開啟：
 
