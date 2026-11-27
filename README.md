@@ -1,4 +1,6 @@
 # 資料助秘文件office彙整
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/b8c602fe-3dde-41c7-aae6-9c3455ed999f" />
+
 <img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/aa6bce38-e0af-456a-8bfd-d9fec20df279" />
 說明
 
