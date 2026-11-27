@@ -30,9 +30,17 @@ https://github.com/user-attachments/assets/8c87f269-3076-4f11-92a7-58d5b29bd03f
 - **多語系**：繁體中文（預設）、简体中文、English、日本語、한국어、Tiếng Việt、Bahasa Indonesia、ไทย、Français、Deutsch、Español。
 - **語音動態教學**（臺灣真人神經語音）、程式內更新、桌面捷徑。
 
-## 平台
+## 下載與平台
 
-Windows 11（第一版）→ macOS → 線上版（GitHub Pages）→ iPhone／iPad（線上安裝）→ Android。
+| 平台 | 下載 |
+|---|---|
+| Windows 10／11 | [ZMSOffice-Setup-0.9.0.exe](https://github.com/achir1015/zms-office/releases/latest) |
+| macOS 12 以上（Intel／Apple 晶片，已公證） | [ZMSOffice-0.9.0-mac.dmg](https://github.com/achir1015/zms-office/releases/latest) |
+| 線上版（瀏覽器，不用安裝） | https://achir1015.github.io/zms-office/ |
+| iPhone／iPad | 用 Safari 開 https://achir1015.github.io/zms-office/ios/ 線上安裝 |
+| Android | [ZMSOffice-0.9.0-android.apk](https://github.com/achir1015/zms-office/releases/latest) |
+
+電腦版有完整的帳號權限（MariaDB）、MCP 伺服器、直接編輯電腦上的檔案；線上版與手機版的文件存在該裝置的瀏覽器空間（IndexedDB），一位使用者、離線可用，匯出的檔案用分享選單存到「檔案」或傳出去。
 
 ## 開發
 

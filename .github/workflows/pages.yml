@@ -1,0 +1,34 @@
+# 線上版（GitHub Pages）：下載編輯器元件（ONLYOFFICE 離線版＋draw.io）→ tools/make_pages.py 產生 docs/ → 部署
+name: pages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["web/**", "tools/make_pages.py", "tools/fetch_vendor.py", "tools/locale_fill.py", "docs/ios/**", ".github/workflows/pages.yml"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install brotli opencc
+      - run: python tools/fetch_vendor.py
+      - run: python tools/make_pages.py
+      - run: du -sh docs
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: docs }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

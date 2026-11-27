@@ -21,3 +21,7 @@ android/*.jks
 android/local.properties
 ios/web/
 ios/build/
+dist-mac/
+build-mac/
+tests/out_edge/
+ios/build/
