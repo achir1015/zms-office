@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DataWord</title>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/editor.css">
+</head>
+<body class="ed-page">
+<div id="bar">
+  <span id="app-badge" class="badge">DataWord</span>
+  <span id="doc-name" title=""></span>
+  <span id="save-state" class="state"></span>
+  <div class="menus">
+    <button class="mb" id="m-file" data-t="檔案">檔案</button>
+    <button class="mb" id="m-ai">✨ <span data-t="AI 助理">AI 助理</span></button>
+    <button class="mb" id="m-ext" data-t="擴充功能">擴充功能</button>
+    <span id="custom-menus"></span>
+  </div>
+  <div class="grow"></div>
+  <label class="autosave" title="自動儲存" data-tt="自動儲存"><input type="checkbox" id="autosave"> <span data-t="自動儲存">自動儲存</span></label>
+  <button class="mb" id="m-share" data-t="共用">共用</button>
+  <button class="mb primary" id="m-save" title="Ctrl+S" data-t="儲存">儲存</button>
+</div>
+<div id="ed-main">
+  <div id="ed"><div id="iframe"></div><div id="ed-loading"><div class="spinner"></div><div id="ed-loading-msg" data-t="開啟文件中…">開啟文件中…</div></div></div>
+  <aside id="side" class="hidden"></aside>
+</div>
+<script src="js/api.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="js/convert.js"></script>
+<script src="js/gas.js"></script>
+<script src="js/aipanel.js"></script>
+<script src="js/notebook.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>

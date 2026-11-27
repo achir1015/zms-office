@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.mp3 binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.ttf binary
+*.bat text eol=crlf
+*.iss text eol=crlf
+*.isl text eol=crlf

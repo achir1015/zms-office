@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DataDiagram</title>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/editor.css">
+</head>
+<body class="ed-page">
+<div id="bar">
+  <span id="app-badge" class="badge">DataDiagram</span>
+  <span id="doc-name"></span>
+  <span id="save-state" class="state"></span>
+  <div class="menus">
+    <button class="mb" id="m-file" data-t="檔案">檔案</button>
+    <button class="mb" id="m-ai">✨ <span data-t="AI 畫流程圖">AI 畫流程圖</span></button>
+    <button class="mb" id="m-insert" data-t="插入到文件">插入到文件</button>
+  </div>
+  <div class="grow"></div>
+  <label class="autosave"><input type="checkbox" id="autosave"> <span data-t="自動儲存">自動儲存</span></label>
+  <button class="mb primary" id="m-save" title="Ctrl+S" data-t="儲存">儲存</button>
+</div>
+<div id="ed-main">
+  <div id="ed"><iframe id="dio" title="draw.io"></iframe><div id="ed-loading"><div class="spinner"></div><div data-t="開啟流程圖中…">開啟流程圖中…</div></div></div>
+</div>
+<script src="js/api.js"></script>
+<script src="js/diagram.js"></script>
+</body>
+</html>
